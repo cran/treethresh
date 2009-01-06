@@ -58,10 +58,13 @@ Returns an object of the class \code{\link[wavethresh]{wd}} or
   \code{\link{insert.coefficients}} into a single (hopefully) more
   user-friendly function.
 }  
+\references{
+Evers, L. and Heaton, T. (2009) Locally Adaptive Tree-Based Thresholding. Journal of Computational and Graphical Statistics.  Dec 2009, Vol. 18, No. 4: 961-977.
+}
 \examples{
 ## The following examples shows how an example image can be
-## thresholded step by step. All the steps are combined in the more
-## user-friendly function wavelet.treethresh
+## thresholded using the more user-friendly function
+## wavelet.treethresh
 
 ## (01) Load the example image
 data(tiles)
@@ -77,8 +80,6 @@ par(mai=rep(0,4)) ; image(corrupted,col=grey(0:255/255))
 
 ## (05) Compute the wavelet transform
 corrupted.wt <- imwd(corrupted)
-
-save.image(file="~/holygrail.RData")
 
 ## (06) Perform the thresholding
 denoised.wt <- wavelet.treethresh(corrupted.wt)

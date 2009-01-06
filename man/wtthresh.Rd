@@ -102,7 +102,7 @@ corresponding to the signal. Defaults to \code{0.5}.}
   \item{control}{The control list of tuning options used. (see argument \code{control}).}
 }
 \references{
-Evers, L. and Heaton T. (2009) Locally adaptive tree-based thresholding.
+Evers, L. and Heaton T. (2009) Locally Adaptive Tree-Based Thresholding. Journal of Computational and Graphical Statistics.  Dec 2009, Vol. 18, No. 4: 961-977.
 }
 \note{
 For an example of the use of \code{wtthresh}, see \code{\link{coefficients}}.

@@ -117,7 +117,4 @@ sum((denoised-tiles)^2)
 \seealso{
 \code{\link{treethresh}}, \code{\link{wtthresh}}, \code{\link{wavelet.treethresh}}
 }
-\references{
-Evers, L. and Heaton T. (2009) Locally adaptive tree-based tresholding.
-}
 
