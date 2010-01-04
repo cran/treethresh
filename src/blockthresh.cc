@@ -5,6 +5,8 @@
 #include <Rmath.h>
 #include "utils.h"
 
+#define round(x) fround(x,1.0)
+
 using namespace std;
 
 namespace blockthresh {

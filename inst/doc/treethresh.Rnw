@@ -533,15 +533,15 @@ invisible(draw.cuts(tiles.noisy.wttp$splits, 1, clip=clip, factor=2, lwd=2))
 \begin{thebibliography}{7}
 \newcommand{\enquote}[1]{``#1''}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
-\bibitem[{Breiman et~al.(1984)Breiman, Friedman, Olshen, and
+\bibitem[{Breiman et al.(1984)Breiman, Friedman, Olshen, and
   Stone}]{Breiman:84}
-Breiman, L., Friedman, J.~H., Olshen, R.~A., and Stone, C.~J. (1984),
+Breiman, L., Friedman, J. H., Olshen, R. A., and Stone, C. J. (1984),
   \textit{Classification and Regression Trees}, Monterey, CA: Wadsworth and
   Brooks/Cole.
 \bibitem[{Evers and Heaton(2009)}]{ttpaper}
-Evers, L. and Heaton T.~J. (2009), \enquote{Locally-adaptive tree-based thresholding,} \textit{Journal of Compuational and Graphical Statistics}, to appear.
+Evers, L. and Heaton T. J. (2009), \enquote{Locally-adaptive tree-based thresholding,} \textit{Journal of Compuational and Graphical Statistics}, to appear.
 \bibitem[{Johnstone and Silverman(2004)}]{JohnSil:04}
-Johnstone, I.~M. and Silverman, B.~W. (2004), \enquote{Needles and straw in
+Johnstone, I. M. and Silverman, B. W. (2004), \enquote{Needles and straw in
   haystacks: Empirical Bayes estimates of possible sparse sequences,}
   \textit{Annals of Statistics}, 32, 1594--1649.
 \bibitem[{Johnstone and Silverman(2005a)}]{JohnSil:05a}
@@ -550,9 +550,9 @@ Johnstone, I.~M. and Silverman, B.~W. (2004), \enquote{Needles and straw in
 \bibitem[{Johnstone and Silverman(2005b)}]{JohnSil:05b}
 --- (2005b), \enquote{EbayesThresh: {R} {P}rograms for {E}mpirical {B}ayes {T}hresholding,} \textit{Journal of Statistical Software}, 12 (8).
 \bibitem[{Nason(1998)}]{Nason:98}
-Nason, G.~P. (1998), \textit{WaveThresh3 Software}, University of Bristol.
+Nason, G. P. (1998), \textit{WaveThresh3 Software}, University of Bristol.
 \bibitem[{Ripley(1996)}]{Ripley:96}
-Ripley, B.~D. (1996), \textit{Pattern recognition and neural networks},
+Ripley, B. D. (1996), \textit{Pattern recognition and neural networks},
   Cambridge: Cambridge University Press.
 \end{thebibliography}
 \end{document}

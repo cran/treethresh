@@ -18,7 +18,7 @@ wavelet.treethresh(object, sdev=NA, dev=mad, start.level=5,
 }
 \arguments{
   \item{object}{An object of the class \code{\link[wavethresh]{wd}} or
-    \code{\link[wavethresh]{wtthresh}} to be smoothed by thresholding.
+    \code{\link{wtthresh}} to be smoothed by thresholding.
   }
   \item{sdev}{The standard error of the noise (if known), otherwise
 \code{NA}.}
@@ -49,7 +49,7 @@ using the posterior median of the coefficient \eqn{\mu|y}{mu|y}
 }
 \value{
 Returns an object of the class \code{\link[wavethresh]{wd}} or
-    \code{\link[wavethresh]{wtthresh}}, where the coefficients have
+    \code{\link{wtthresh}}, where the coefficients have
     been thresholded using the TreeThresh algorithm.
 }
 \note{\code{wavelet.treethresh} combines the functions \code{\link{extract.coefficients}},
