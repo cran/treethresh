@@ -152,9 +152,9 @@ prune.treethresh <- function(object,v=5,sd.mult=0.5,plot=TRUE) {
     ns <- 1:length(results.mean)
     plot(ns,results.mean,xaxt="n",ylab="CV-Loglikelihood (+const)",type="o",xlab="C",ylim=results.range)
     segments(ns, results.mean - results.sd, ns, results.mean + results.sd)
-    axis(1, at = ns, lab = c(format(C.values[-length(C.values)],digits=3),">1"))
+    axis(1, at = ns, labels = c(format(C.values[-length(C.values)],digits=3),">1"))
     mtext("number of regions", side = 3, line = 3)
-    axis(3, at = ns, lab = as.character(sizes(object)))
+    axis(3, at = ns, labels = as.character(sizes(object)))
     abline(h=lower.bound,lty=3)
   }
   subtree.treethresh(object,C.values[max(which(results.mean>=lower.bound))])
@@ -373,9 +373,9 @@ prune.wtthresh <- function(object,v=5,sd.mult=0.5,plot=TRUE) {
     ns <- 1:length(results.mean)
     plot(ns,results.mean,xaxt="n",ylab="CV-Loglikelihood (+const)",type="o",xlab="C",ylim=results.range)
     segments(ns, results.mean - results.sd, ns, results.mean + results.sd)
-    axis(1, at = ns, lab = c(format(C.values[-length(C.values)],digits=3),">1"))
+    axis(1, at = ns, labels = c(format(C.values[-length(C.values)],digits=3),">1"))
     mtext("number of regions", side = 3, line = 3)
-    axis(3, at = ns, lab = as.character(get.sizes(object)))
+    axis(3, at = ns, labels = as.character(get.sizes(object)))
     abline(h=lower.bound,lty=3)
   }
   subtree.wtthresh(object,C.values[max(which(results.mean>=lower.bound))])

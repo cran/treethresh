@@ -12,9 +12,8 @@
   not need to be given, but is determined using cross-validation.
 }
 \usage{
-prune(object, v=5, sd.mult=0.5, plot=TRUE)
-prune.treethresh(object, v=5, sd.mult=0.5, plot=TRUE)
-prune.wtthresh(object, v=5, sd.mult=0.5, plot=TRUE)
+\method{prune}{treethresh}(object, v=5, sd.mult=0.5, plot=TRUE)
+\method{prune}{wtthresh}(object, v=5, sd.mult=0.5, plot=TRUE)
 }
 \arguments{
   \item{object}{An object of the class \code{\link{treethresh}} or
@@ -68,10 +67,6 @@ cross-validation is used to prune the tree \code{object}. If
 \code{sd.mult} standard errors worse than the best \eqn{C} is used.
 }
 \note{
-\code{prune.treethresh} and \code{prune.wtthresh}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{prune} will take care of calling the right function.
-
 For an example of the use of \code{prune}, see \code{\link{coefficients}}.}
 
 \seealso{

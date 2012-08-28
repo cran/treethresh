@@ -539,7 +539,7 @@ Breiman, L., Friedman, J. H., Olshen, R. A., and Stone, C. J. (1984),
   \textit{Classification and Regression Trees}, Monterey, CA: Wadsworth and
   Brooks/Cole.
 \bibitem[{Evers and Heaton(2009)}]{ttpaper}
-Evers, L. and Heaton T. J. (2009), \enquote{Locally-adaptive tree-based thresholding,} \textit{Journal of Compuational and Graphical Statistics}, 18 (4), 961--977.
+Evers, L. and Heaton T. J. (2009), \enquote{Locally-adaptive tree-based thresholding,} \textit{Journal of Compuational and Graphical Statistics}, to appear.
 \bibitem[{Johnstone and Silverman(2004)}]{JohnSil:04}
 Johnstone, I. M. and Silverman, B. W. (2004), \enquote{Needles and straw in
   haystacks: Empirical Bayes estimates of possible sparse sequences,}

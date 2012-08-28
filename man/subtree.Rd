@@ -11,9 +11,8 @@
   according to a specified value of the complexity parameter \eqn{C}.
 }
 \usage{
-subtree(object, C)
-subtree.treethresh(object, C)
-subtree.wtthresh(object, C)
+\method{subtree}{treethresh}(object, C)
+\method{subtree}{wtthresh}(object, C)
 }
 \arguments{
   \item{object}{An object of the class \code{\link{treethresh}} or
@@ -28,10 +27,6 @@ subtree.wtthresh(object, C)
     for details on the pruning process).
   }
 \note{
-\code{subtree.treethresh} and \code{subtree.wtthresh}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{subtree} will take care of calling the right function.
-
 Use the function \code{\link{prune}} to carry out the pruning without
 having to specify the complexity parameter \eqn{C}.
 }

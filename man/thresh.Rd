@@ -9,9 +9,8 @@
   Thresholds according to a tree object of the classes
   \code{\link{treethresh}} or \code{\link{wtthresh}}.}
 \usage{
-thresh(object, data, C, postmed=TRUE)
-thresh.treethresh(object, data, C, postmed=TRUE)
-thresh.wtthresh(object, data, C, postmed=TRUE)
+\method{thresh}{treethresh}(object, data, C, postmed=TRUE)
+\method{thresh}{wtthresh}(object, data, C, postmed=TRUE)
 }
 \arguments{
   \item{object}{An object of the class \code{\link{treethresh}} or
@@ -37,10 +36,6 @@ thresh.wtthresh(object, data, C, postmed=TRUE)
   \code{thresh} returns the thresholded \code{data}.
 }
 \note{
-\code{thresh.treethresh} and \code{thresh.wtthresh}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{thresh} will take care of calling the right function.
-
 For an example of the use of \code{thresh}, see
 \code{\link{coefficients}}.
 }

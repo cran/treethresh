@@ -11,9 +11,8 @@
   of the weight \eqn{w} for each data point.
 }
 \usage{
-get.w(object, C)
-get.w.treethresh(object, C)
-get.w.wtthresh(object, C)
+\method{get.w}{treethresh}(object, C)
+\method{get.w}{wtthresh}(object, C)
 }
 \arguments{
   \item{object}{An object of the class \code{\link{treethresh}} or
@@ -34,11 +33,6 @@ get.w.wtthresh(object, C)
     same name and dimensions as the list that was used to estimate
     \code{object}.
   }
-\note{
-\code{get.w.treethresh} and \code{get.w.wtthresh}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{get.w} will take care of calling the right function.
-}
 
 \seealso{
 \code{\link{treethresh}}, \code{\link{wtthresh}}, \code{\link{get.t}}, \code{\link{prune}}

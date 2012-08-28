@@ -19,12 +19,10 @@ thresholded coefficients.
 }
 
 \usage{
-extract.coefficients(object, start.level=5)
-insert.coefficients(object, update)
-extract.coefficients.wd(object, start.level=5)
-insert.coefficients.wd(object, update)
-extract.coefficients.imwd(object, start.level=5)
-insert.coefficients.imwd(object, update)
+\method{extract.coefficients}{wd}(object, start.level=5)
+\method{insert.coefficients}{wd}(object, update)
+\method{extract.coefficients}{imwd}(object, start.level=5)
+\method{insert.coefficients}{imwd}(object, update)
 }
 \arguments{
   \item{object}{For \code{extract.coefficients} the
@@ -46,12 +44,6 @@ insert.coefficients.imwd(object, update)
   \code{\link[wavethresh]{wd}} or \code{\link[wavethresh]{imwd}} object
   into which the coefficients from \code{update} have been inserted.
   
-}
-\note{
-\code{extract.coefficients.wd} and \code{extract.coefficients.imwd}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{extract.coefficients} will take care of calling the right
-function (idem for \code{insert.coefficients}).
 }
 \examples{
 ## The following examples shows how an example image can be
@@ -116,5 +108,8 @@ sum((denoised-tiles)^2)
 
 \seealso{
 \code{\link{treethresh}}, \code{\link{wtthresh}}, \code{\link{wavelet.treethresh}}
+}
+\references{
+Evers, L. and Heaton T. (2009) Locally adaptive tree-based tresholding.
 }
 

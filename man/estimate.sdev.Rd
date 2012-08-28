@@ -12,9 +12,8 @@ at the finest level(s) of an \code{\link[wavethresh]{wd}} or
 }
 
 \usage{
-estimate.sdev(object, dev=mad)
-estimate.sdev.wd(object, dev=mad)
-estimate.sdev.imwd(object, dev=mad)
+\method{estimate.sdev}{wd}(object, dev=mad)
+\method{estimate.sdev}{imwd}(object, dev=mad)
 }
 \arguments{
   \item{object}{For \code{extract.coefficients} the
@@ -29,9 +28,5 @@ estimate.sdev.imwd(object, dev=mad)
   \code{estimate.sdev} returns an estimate of the standard error.
 }
 \note{
-\code{estimate.dev.wd} and \code{estimate.dev.imwd}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{estimate.dev} will take care of calling the right function.
-
 For an example of the use of \code{estimate.sdev}, see \code{\link{coefficients}}.
 }

@@ -11,9 +11,8 @@
   of the hard threshold \eqn{t} for each data point.
 }
 \usage{
-get.t(object, C)
-get.t.treethresh(object, C)
-get.t.wtthresh(object, C)
+\method{get.t}{treethresh}(object, C)
+\method{get.t}{wtthresh}(object, C)
 }
 \arguments{
   \item{object}{An object of the class \code{\link{treethresh}} or
@@ -34,11 +33,6 @@ get.t.wtthresh(object, C)
     same name and dimensions as the list that was used to estimate
     \code{object}.
   }
-\note{
-\code{get.t.treethresh} and \code{get.t.wtthresh}
-should rarely be directly called by the user. The more user-friendly S3 function
-\code{get.t} will take care of calling the right function.
-}
 
 \seealso{
 \code{\link{treethresh}}, \code{\link{wtthresh}}, \code{\link{get.w}}, \code{\link{prune}}
