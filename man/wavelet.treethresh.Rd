@@ -78,8 +78,6 @@ par(mai=rep(0,4)) ; image(corrupted,col=grey(0:255/255))
 ## (05) Compute the wavelet transform
 corrupted.wt <- imwd(corrupted)
 
-save.image(file="~/holygrail.RData")
-
 ## (06) Perform the thresholding
 denoised.wt <- wavelet.treethresh(corrupted.wt)
 

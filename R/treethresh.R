@@ -150,7 +150,7 @@ prune.treethresh <- function(object,v=5,sd.mult=0.5,plot=TRUE) {
   if (plot) {
     results.range <- c(min(results.mean-results.sd),max(results.mean+results.sd))
     ns <- 1:length(results.mean)
-    plot(ns,results.mean,xaxt="n",ylab="CV-Loglikelihood (+const)",type="o",xlab="C",ylim=results.range)
+    plot(ns,results.mean,xaxt="n",ylab="Loglikelihood from CV (+const)",type="o",xlab="C",ylim=results.range)
     segments(ns, results.mean - results.sd, ns, results.mean + results.sd)
     axis(1, at = ns, labels = c(format(C.values[-length(C.values)],digits=3),">1"))
     mtext("number of regions", side = 3, line = 3)
@@ -371,7 +371,7 @@ prune.wtthresh <- function(object,v=5,sd.mult=0.5,plot=TRUE) {
   if (plot) {
     results.range <- c(min(results.mean-results.sd),max(results.mean+results.sd))
     ns <- 1:length(results.mean)
-    plot(ns,results.mean,xaxt="n",ylab="CV-Loglikelihood (+const)",type="o",xlab="C",ylim=results.range)
+    plot(ns,results.mean,xaxt="n",ylab="Loglikelihood from CV (+const)",type="o",xlab="C",ylim=results.range)
     segments(ns, results.mean - results.sd, ns, results.mean + results.sd)
     axis(1, at = ns, labels = c(format(C.values[-length(C.values)],digits=3),">1"))
     mtext("number of regions", side = 3, line = 3)

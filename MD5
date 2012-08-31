@@ -1,13 +1,13 @@
-8d4dd8e5ed3b7d4047131ecee67e8640 *DESCRIPTION
+134a64cc9349e3661fd2494b2f6804f4 *DESCRIPTION
 0b53b01391e78ebf1aab87d384503d4c *NAMESPACE
-3ff6f7637361402088cae67ec98bc78a *R/treethresh.R
+304c9a43e72ae43ed254c649e377227e *R/treethresh.R
 a7afad4d658e4e16b9149cae1ddb233d *data/row263.RData
 acd3431a909558092c8cd99032f44511 *data/tiles.RData
 4c25b1446bdbfacfb914569452c20f3f *data/trees.RData
 f293da018844969e06b98bd6eb3d1fd3 *inst/doc/onedwavillu.pdf
 2eb7e4ef2fc5241816af94d882bb542e *inst/doc/prune.pdf
 9b8937631c7ff3579caac2dd514d446f *inst/doc/treethresh.Rnw
-9adbfefed27f2cf83ca9f84ae07e85e8 *inst/doc/treethresh.pdf
+d84824a9ddc1d385eb8b99f424c0d91a *inst/doc/treethresh.pdf
 ca7648ceadf5ddeb3767fc458642e4d2 *inst/doc/twodwavillu.pdf
 a73bea2846aa3c7f78a635cb18904d2e *man/coefficients.Rd
 3ed240fed53c5c57e62bff65f774e577 *man/estimate.sdev.Rd
@@ -20,7 +20,7 @@ e2bb9f4117e8d00016a29068950358f8 *man/subtree.Rd
 28e9bca64967bd36c432014e1671ae70 *man/tiles.Rd
 412872fbdd03fc2cbd9f88e1434eb1c3 *man/trees.Rd
 694d7812ae4a2d4a2813b692d36087cf *man/treethresh.Rd
-6a189c88fa918fd765891e6266be24f2 *man/wavelet.treethresh.Rd
+c4599f105cb093c54a5ec13d2be8a1dc *man/wavelet.treethresh.Rd
 87f3ba1b9c456f293206143ff2ae14b9 *man/wtthresh.Rd
 23a5f79a43abd2ee3d030b4c4cb5c9da *src/Makevars
 6917fafd28455e3651b037396c5113e1 *src/blockthresh.cc
