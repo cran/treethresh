@@ -1,0 +1,558 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb,amsmath,amsfonts,subfigure,natbib}
+\usepackage[margin=3cm]{geometry}
+
+\title{Locally adaptive tree-based thresholding using the \texttt{treethresh} package in \textsf{R}}
+\author{Ludger Evers \and Tim Heaton}
+
+\newcommand{\ppp}{\mathcal{P}}
+
+\begin{document}
+\SweaveOpts{keep.source=TRUE} 
+  
+<<echo=FALSE>>=
+library(treethresh)
+@ 
+
+\maketitle
+%\VignetteIndexEntry{Locally adaptive tree-based thresholding using the treethresh package}
+\setkeys{Gin}{width=0.65\textwidth}
+
+\section{Methodology}
+
+\textsl{TreeThresh} \citep{ttpaper} is a modification of the \textsl{EbayesThresh} method \citep{JohnSil:04,JohnSil:05a,JohnSil:05b} which tries to partition the underlying signal before carrying out the thresholding. This should yield better results for heterogeneous signals.
+
+\subsection{Model}
+Suppose we have, after possible rescaling to obtain unit variance, observed a sequence $\mathbf{X} = (X_i)_{i\in\mathcal{I}}$ satisfying 
+$$
+X_i = \mu_i + \epsilon_i, \quad \textrm{for } i \in \mathcal{I},
+$$
+where $\boldsymbol \mu=(\mu_i)_{i\in\mathcal{I}}$ is a possibly sparse signal (i.e. some/most of the $\mu_i$ are believed to be zero), the $\epsilon_i$ are independent $N(0,1)$ noise, and $\mathcal{I}$ is a possibly multidimensional index domain. Being a generalisation of the \textsl{EbayesThresh} method, the  \textsl{TreeThresh} method is based on assuming a mixture between a point mass at zero (denoted $\delta_0$) and a signal with density $\gamma(\cdot)$ as prior distribution for the $\mu_i$: 
+$$f_{\textrm{prior}}(\mu_i) = (1- w_i) \delta_0 + w_i \gamma(\mu_i)$$
+
+In contrast to the \textsl{EbayesThresh} method the mixing weights $w_i$ depends on the index $i$, i.e. the underlying signal can be heterogeneous (in the sense of not being everywhere equally sparse). We assume there is a partition of the index space $\mathcal{I}=P_1\cup\ldots\cup P_p\;$, $P_k\cap P_l=\emptyset$, such that the weights within each region $P$ are (almost) constant.
+
+The \texttt{treethresh} software uses a double exponential distribution\footnote{i.e. a distribution on the real line with density $\gamma(u)=\frac{a}{2}\exp(-a|u|).$} with fixed scale parameter $a$ (set to $0.5$ by default) as $\gamma(\cdot)$, which is also the default setting used in the \texttt{EbayesThresh} package. This yields
+$$
+l(\mathbf{w}) = \sum_{i \in \mathcal{I}} \log \left( (1-w_i)\phi(x_i) + w_i(\gamma \star \phi)(x_i)\right)
+$$
+as the marginal loglikelihood of the observed $\mathbf{x}$.
+
+\subsection{Estimation}
+In order to estimate the mixing weights $w_i$ we need to estimate the partition $\mathcal{P}$ and the mixing weights in each region $P$. Once an ``optimal''  partition has been identified, one can estimate the mixing weights in each partition by maximising the loglikelihood of the observations in that region. This corresponds to carrying out the \textsl{EbayesThresh} algorithm for region separately. 
+
+The partitioning is found using an algorithm that resembles the one used in recursive partitioning algorithms like \textsl{Classification and Regression Trees} \citep[CARTs,{ }][]{Breiman:84}. First of all, a nested sequence of increasingly fine partitions is estimated. Cross-validation is then used to find the ``best'' partition of that sequence. Section \ref{sec:two} gives a more detailed description of the algorithm.
+
+\subsection{Thresholding}
+Having estimated the mixing weights $w_i$, we can use these to estimate the underlying signal $\mu_i$. This can be done in many ways:
+
+\begin{description}
+\item[Posterior median] The posterior median of $\mu_i$ given $X_i=x$ is shown in figure \ref{fig:threshcomp} as a function of $x$ (solid line). It has a thresholding property: For $x\in[-t_{\hat w_i},t_{\hat w_i}]$, the posterior median is zero. \citep[for the mathematical details see  e.g.][sec. 6.1]{JohnSil:05b}.
+\item[Hard thresholding] Alternatively, we could use the $t_{\hat w_i}$ obtained from the posterior median to define the hard thresholding rule
+$$
+\hat \mu_i^{\textrm{hard}}(x)=\left\{
+  \begin{array}{ll} 
+    x & \textrm{for $x<-t_{\hat w_i}$}\\
+    0 & \textrm{for $-t_{\hat w_i}\leq x\leq t_{\hat w_i}$}\\
+    x & \textrm{for $x>t_{\hat w_i}$}
+  \end{array}\right.
+$$
+(dashed line in figure \ref{fig:threshcomp}). The hard thresholding rule is discontinuous at $-t_{\hat w_i}$ and at $t_{\hat w_i}$. 
+  
+\item[Soft thresholding] The soft thresholding rule 
+ $$
+\hat \mu_i^{\textrm{soft}}(x)=\left\{
+  \begin{array}{ll} 
+    x+t_{\hat w_i} & \textrm{for $x<-t_{\hat w_i}$}\\
+    0 & \textrm{for $-t_{\hat w_i}\leq x\leq t_{\hat w_i}$}\\
+    x-t_{\hat w_i} & \textrm{for $x>t_{\hat w_i}$}
+  \end{array}\right.
+$$
+(dotted line in figure \ref{fig:threshcomp}) is continuous, but is biased even for large values of $x$.
+\end{description}
+
+By default, the \texttt{treethresh} software uses the posterior median.
+
+\begin{figure}
+\begin{center}
+<<echo=FALSE,fig=TRUE>>=
+from <- -4
+to <- 4
+x <- seq(from,to,length.out=300)
+w <- 0.3
+t <- tfromw(w)
+plot(x,x,type="n",xaxt="n", yaxt="n",xlab="x",ylab=expression(mu(x)))
+usr <- par()$usr
+rect(-t,usr[3]+0.02,t,usr[4]-0.02,col=grey(0.85),border=NA)
+lines(x,postmed.laplace(x,w=w))
+lines(c(from,-t,NA,-t,t,NA,t,to),c(from,-t,NA,0.02,0.02,NA,t,to),lty=2)
+lines(c(from,-t,t,to),c(from+t,-0.02,-0.02,to-t),lty=3)
+axis(1,at=c(-t,0,t),labels=c(expression(-t[w]),0,expression(t[w])))
+axis(2,at=0)
+legend("topleft",lty=1:3,legend=c("post.med.","hard","soft"))
+@ 
+\end{center}
+\caption{Comparison of the three thresholding rules.\label{fig:threshcomp}}
+\end{figure}
+\section{Algorithmic details\label{sec:two}}
+
+The partitioning algorithm aims to find a partitioning of the index set $\mathcal{I}=P_1\cup\ldots\cup
+P_p\;$, $P_k\cap P_l=\emptyset$, such that $\{w_i,\;i\in P_k\}$ is (almost) constant.
+
+An exhaustive search over all possible rectangular partitions is prohibitive, thus the method uses a greedy ``one step look-ahead'' strategy of recursively partitioning the signal: the canonical step of the algorithm is to split one rectangular region $P$ into two rectangular regions $L$ and $R$. As there is only a small number of these ``splits'', an exhaustive search can be performed. An optimal cutoff should split the current region $P$ into two new regions in which the signal is hopefully more heterogeneous. This can be measured by looking at a test of the null hypothesis that the signal is equally sparse in both regions, i.e. $H_0: w^{(L)}=w^{(R)}$. By default, the software uses the score statistic, as this does not require computing  $w^{(L)}$ and $w^{(R)}$ for all pairs of candidate regions $L$ and $R$, see \citet{ttpaper} for the mathematical details. 
+
+This canonical step of splitting one rectangular region into two rectangular regions is carried out recursively. This (first) step of the algorithm is implemented in the functions \texttt{treethresh} and \texttt{wtthresh} (see section \ref{sec:wavelets} for the differences between these two functions).
+
+In order to avoid overfitting, it is important not to estimate too fine a partition. One possibility could be to use stopping rules based on the test statistic of the score test (or a likelihood ratio test). However these suffer from two drawbacks. First, it is difficult to find the correct critical value, as we are testing data-driven hypotheses. Second, using a na\"ive stopping rule 
+would lead to a short-sighted strategy for choosing the optimal partition: a seemingly worthless split might turn out to be an important boundary in a more complex partition. Thus we propose, in complete analogy with the CART algorithm, to initially estimate too fine a partition and then reduce its complexity by finding a coarser super-partition such that 
+$$l_{\ppp} - \alpha \cdot |\ppp|$$
+is maximal, where $l_{\ppp}$ is the log-likelihood obtained by
+partition $\ppp$ and $|\ppp|$ is the number of regions in $\ppp$. 
+
+Just as in the case of CARTs, one can show \citep[see e.g.][sec.
+7.2]{Ripley:96} that there exists a nested sequence of
+partitions which maximize the penalized log-likelihood over
+different ranges of $\alpha$. Figure \ref{fig:erdferkel} illustrates this idea.
+The ``optimal'' value of $\alpha$ can found using cross-validation.  As the parameter $\alpha$ is on a scale which is difficult to interpret, the software works with the parameter $C=\frac{\alpha}{\alpha_0}$, where $\alpha_0$ is the value that would yield a partition consisting of a single region. This parameter $C$ can thus take values between $0$ (no pruning) to $1$ (partition reduced to a single region). 
+
+As such, one would choose the value of $C$ that yields the largest predictive loglikelihood. However, it turns out to be often better to use a simpler model (corresponding to a larger value of $C$) if the corresponding predictive loglikelihood is not much worse than that of the best model. Thus the package uses by default the largest $C$ for which the difference to the best predictive loglikelihood is less than half the standard error of the best predictive loglikelihood.
+
+This second step of the algorithm can be carried out by calling the function \texttt{prune}. 
+
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.65\textwidth]{prune}
+\end{center}
+\caption{Example of a nested sequence of partitions corresponding to different values of $\alpha$. As $\alpha$ increases, the optimal penalised likelihood partition becomes coarser and is nested within the optimal partition for smaller values of $\alpha$.\label{fig:erdferkel}}
+\end{figure}
+
+ 
+For a more detailed description of the algorithm together with its asymptotic properties see \citet{ttpaper}. Sections \ref{ssec:seqex} and \ref{ssec:wavex} contain two examples illustrating these two steps of the algorithm.
+
+\section{Application to  wavelet coefficients\label{sec:wavelets}}
+
+
+Perhaps the most common application of thresholding is for denoising an observed, possibly multidimensional, signal (or image) using wavelets. Here the process consists of transforming the noisy signal to the wavelet domain where it is expected that the underlying signal has a sparse representation. The observed wavelet coefficients are thus thresholded before being transformed back to the original domain to provide a hopefully noise-free version of the original signal.
+
+Denoising of signals/images in this way provokes an additional question of whether we would wish to partition our image in the original untransformed domain or simply within each individual level of the wavelet coefficient space. The former approach is appealing in that it permits the interpretation of the untransformed image as containing distinct regions with differing characteristics and allows partitioning information to be shared across differing levels of the wavelet transform which may improve estimation. Identification of such regions in the original domain may also be of independent interest to the user. Figure \ref{fig:jointwav} illustrates the idea of partitioning the original untransformed domain and illustrates how the partition of the original domain is transferred to the wavelet coefficients.
+
+Our code provides the possibility to apply both types of partitioning algorithm. \textit{Levelwise TreeThresh} simply applies the partitioning algorithm explained in \ref{sec:two} to each level of the wavelet coefficients independently. On the other hand, \textit{Wavelet TreeThresh} combines the information across different levels of the wavelet transform to partition in the original space domain. As well as providing an estimate of the noise-free image/signal, the output of \textit{Wavelet TreeThresh} provides the partition of the space domain selected for the user to see. For an example of how to apply the \textsl{TreeThresh} algorithm see section \ref{ssec:wavex}.  
+
+\begin{figure}
+\subfigure[Illustration for a one-dimensional signal.]{\includegraphics[width=0.7\textwidth]{onedwavillu}}
+\subfigure[Illustration for a two-dimensional signal.]{\includegraphics[width=0.28\textwidth]{twodwavillu}}
+\caption{Underlying signal in the original domain (bottom) and corresponding wavelet coefficients at fine levels. The thick solid lines indicating the partitions illustrate how the partition of the original index domain in transferred to the each level of the wavelet coefficients.\label{fig:jointwav}}
+\end{figure}
+
+\section{Using the software}
+
+\subsection{Thresholding sequences\label{ssec:seqex}}
+This section uses a simple example (which is very similar to the one given in the help file of \texttt{treethresh}) to illustrates how the \texttt{treethresh} package can be used to threshold a simple sequence.
+
+First of all we start with creating a sparse signal, which is rather dense towards the middle and sparse at the beginning and at the end.
+
+We start with creating a vector that contains the probabilities $w_i$ that $\mu_i\neq 0$. 
+<<>>=
+w.true <- c(rep(0.15,400),rep(0.6,300),rep(0.05,300))
+@ 
+
+Next we create the signal $\boldsymbol \mu=(\mu_1,\ldots,\mu_{1000})$ by drawing the non-zero $\mu_i$ from a Laplace distribution. Figure \ref{fig:moox}(a) displays the simulated true signal. 
+
+<<echo=FALSE>>=
+# Set the seed so that the vignettes are all the same ...
+set.seed(111)
+@ 
+
+<<>>=
+mu <- numeric(length(w.true))
+non.zero.entry <- runif(length(mu))<w.true
+num.non.zero.entries <- sum(non.zero.entry)
+mu[non.zero.entry] <- rexp(num.non.zero.entries,rate=0.5) *
+                        sample(c(-1,1),num.non.zero.entries,replace=TRUE)
+mu[1:14]
+@ 
+
+Next we create the observed noisy signal $\mathbf{x}=(x_1,\ldots,x_{1000})$ by adding white noise to $\boldsymbol \mu$. Figure \ref{fig:moox}(b) displays the simulated ``observed'' signal. 
+
+<<>>=
+x <- mu + rnorm(length(mu))
+@ 
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{figure}
+\subfigure[Underlying true signal $\boldsymbol \mu$]{
+<<echo=FALSE,fig=TRUE>>=
+plot(mu,xlab=paste("Index ",expression(i)),ylab=expression(mu[i]),col=non.zero.entry+1)
+title("True signal")
+@
+}  
+\subfigure[Observed signal $\mathbf x$]{
+<<echo=FALSE,fig=TRUE>>=
+plot(x,xlab=paste("Index ",expression(i)),ylab=expression(x[i]),col=non.zero.entry+1)
+title("Observed signal")
+@
+}  
+\caption{\label{fig:moox}Underlying true signal and observed noisy signal $\mathbf x$ (entries corresponding to non-zero $\mu_i$ in red)}
+\end{figure}
+
+In our example we know that the noise has unit variance. However, in most practical settings this would not necessarily be the case. Estimating the standard error a priori is difficult. The medium absolute deviation as used in the function \texttt{mad} can be used to get a rough idea of the standard error of the noise. The correction factor of $1.4826$ used by \texttt{mad} however is only unbiased if no signal is present, i.e. $\boldsymbol \mu = \boldsymbol 0$. If a signal is present, it overestimates the standard deviation of the noise. For a homogeneous signal with $w_i\equiv 0.5$ \texttt{mad} overestimates the standard deviation by about 50\%. To illustrate this bias, table \ref{tab:factors} gives the correction factors one could use (instead of $1.4826$) for a homogeneous signal if the $w_i$ were constant and known (which would of course defeat the purpose of the \textsl{EbayesThresh} or \textsl{TreeThresh} algorithms). 
+
+<<echo=FALSE>>=
+values <- c(0,0.01,0.05,0.1,0.2,0.3,0.5,1)
+g <- function(x,a=0.5) 0.5*a*exp(a^2/2) * (exp(-a*x) * pnorm(x-a) + exp(a*x)* (1-pnorm(x+a)))
+G <- function(x, w=0, a=0.5) (1-w)*pnorm(x)+w*(0.5+integrate(g, 0, x,a=a,rel.tol = .Machine$double.eps^0.25)$value)-0.75
+
+results <- numeric(length(values))
+for (i in 1:length(results)) results[i] <- 1/uniroot(G, c(0.5,2), w=values[i], tol = .Machine$double.eps^0.5, maxiter = 2e3)$root
+
+@ 
+\begin{table}
+\centerline{\begin{tabular}{lrrrr}\hline
+True proportion of signal $w$ &  $\Sexpr{paste(values[1:4],collapse="$&$")}$\\
+Correction factor &  $\Sexpr{paste(prettyNum(results[1:4]),collapse="$&$")}$\\ \hline
+True proportion of signal $w$ (ctd.)&  $\Sexpr{paste(values[5:8],collapse="$&$")}$\\
+Correction factor (ctd.)&  $\Sexpr{paste(prettyNum(results[5:8]),collapse="$&$")}$\\ \hline
+\end{tabular}}
+\caption{\label{tab:factors}Correction factors that would give an unbiased estimate of the standard deviation of the noise}
+\end{table}
+
+When using \texttt{mad} to estimate the standard error of the noise in our example signal, we use a correction factor of $1.3$ to account for the fact that our signal is fairly dense:
+<<>>=
+sdev <- mad(x, constant=1.3)
+sdev
+@ 
+Next, we rescale the signal using our estimate \texttt{sdev}:
+<<>>=
+x <- x /sdev
+@ 
+
+We are now ready to apply the \texttt{treethresh} function, which estimates the partitioning and the corresponding $w_i$.
+<<>>=
+x.tt <- treethresh(x)
+@ 
+
+The element \texttt{splits} contains detailed information about the partition. Each row corresponds to a region or a split, respectively. The columns are as follows:
+\begin{description}
+\item[\texttt{id}] Integer uniquely identifying the region / split.
+ 
+\item[\texttt{parent.id}] The modulus of \texttt{parent.id} is the \texttt{id} of the parent region. If the current region is to the left of the split, \texttt{parent.id} is negative, otherwise it is positive.
+\item[\texttt{dim}] The dimension (indexed starting at $0$) used to define the split. 
+\item[\texttt{pos}] The position of the split.
+\item[\texttt{left.child.id} / \texttt{left.child.id}] If the region has been split further, these two columns contain the \texttt{id} of the newly created ``children'', otherwise \texttt{NA}.
+\item[\texttt{crit}] The value of the criterion (i.e. by default the score test) for carrying out this split.
+\item[\texttt{w}] The value of $\hat w^{(P)}$ used in this region (before splitting further).
+\item[\texttt{t}] The corresponding threshold $t_{\hat w^{(P)}}$ in this region (before splitting further).
+\item[\texttt{loglikelihood}] Contribution of the observations in this region to the loglikelihood (before splitting further)
+\item[\texttt{alpha} / \texttt{C}] If the value of $C$ (or $\alpha$) in the pruning step is chosen larger than the number given, this region (\emph{not} split) would be removed in the pruning, and only its ``parent'' or another ``ancestor'' would be retained.
+\end{description}
+
+
+<<>>=
+x.tt$splits
+@ 
+Figure \ref{fig:seqexpart} shows the estimated partion and the estimated weights $w_i$ both before and after the pruning.
+
+As mentioned in section \ref{sec:two} and as one can see from figure \ref{fig:seqexpart}(a), the partition estimated in this first step constitutes an overfit to the data. Thus we need to carry out a second pruning step that reduces the complexity of the estimated partition. 
+
+<<echo=FALSE>>=
+# Set the set so that our two calls to prune give the same results
+set.seed(111)
+@ 
+
+<<>>=
+x.ttp <- prune(x.tt)
+x.ttp$splits
+@ 
+
+Figure \ref{fig:seqexprune} shows how the ``optimal'' value of the complexity parameter $C$ was determined. By default \texttt{prune} uses five-fold cross validation (can be changed using the argument \texttt{v}) to estimate the predictive log-likelihood. The predictive log-likelihood is highest for partitions with three regions, and the simpler partition having only one region is more than half a standard error worse (being below the dotted line), thus we retain the partition with three regions.
+\setkeys{Gin}{width=0.65\textwidth}
+\begin{figure}
+\begin{center}
+<<echo=FALSE,fig=TRUE>>=
+# Set the set so that our two calls to prune give the same results
+set.seed(111)
+x.ttp <- prune(x.tt)
+@ 
+\caption{Predictive loglikelihood as a function of the complexity parameter $C$.\label{fig:seqexprune}}
+\end{center}
+\end{figure}
+
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{figure}
+\subfigure[before pruning]{
+<<echo=FALSE,fig=TRUE>>=
+plot(get.w(x.tt),type="s",xlab=paste("Index ",expression(i)),ylab=expression(hat(w[i]))); abline(v=x.tt$splits[,"pos"],lty=3)
+title("Estimated weights (before pruning)")
+@ 
+}
+\subfigure[after pruning]{
+<<echo=FALSE,fig=TRUE>>=
+plot(get.w(x.ttp),type="s",xlab=paste("Index ",expression(i)),ylab=expression(hat(w[i]))); abline(v=x.ttp$splits[,"pos"],lty=3)
+title("Estimated weights (after pruning)")
+#$
+@ 
+}
+\caption{Estimated partition and weights before and after pruning.\label{fig:seqexpart}}
+\end{figure} 
+
+
+Now that we have found the optimal partition, we can start using the estimated weights to threshold the sequence. Figure \ref{fig:seqext} shows the corresponding threshold. The thresholding is done using the function \texttt{thresh}, which uses by default the posterior median.
+<<>>=
+mu.hat <- thresh(x.ttp)
+@
+
+\setkeys{Gin}{width=0.65\textwidth}
+\begin{figure}
+\begin{center}
+<<echo=FALSE,fig=TRUE>>=
+plot(get.t(x.ttp),type="s",xlab=paste("Index ",expression(i)),ylab=expression(t[hat(w[i])])); abline(v=x.ttp$splits[,"pos"],lty=3)
+title("Estimated thresholds (after pruning)")
+@ 
+\end{center}
+\caption{Estimated thresholds $t_{\hat w_i}$ of the partition after pruning.\label{fig:seqext}}
+\end{figure}
+
+Finally, we need to scale the reconstructed signal $\boldsymbol{\hat\mu}$ back to the original domain.
+<<>>=
+mu.hat <- mu.hat * sdev
+@ 
+
+Figure \ref{sig:seqexfinal} shows the reconstructed sequence.
+
+\begin{figure}
+\begin{center}
+<<echo=FALSE,fig=TRUE>>=
+plot(mu,xlab=paste("Index ",expression(i)),ylab=expression(hat(mu)[i]),col=non.zero.entry+1)
+title("Reconstructed signal")
+@   
+\end{center}
+\caption{Reconstructed signal $\hat\mu_i$ in the original scale (entries corresponding to non-zero true signal $\mu_i$ in red).\label{sig:seqexfinal}}
+\end{figure}
+
+
+\subsection{Thresholding wavelet coefficients\label{ssec:wavex}}
+
+\subsubsection{Preparing the example\label{sssec:prologue}}
+
+This example uses the image \texttt{tiles}, shown in figure \ref{fig:tilesorig}(a)
+<<>>=
+data(tiles)
+@ 
+
+In the next step we will add noise to the image to see whether we can remove this noise using the \textsl{TreeThresh} algorithm. 
+
+<<echo=FALSE>>=
+set.seed(111)
+@ 
+<<>>=
+tiles.noisy <- tiles + 0.8 * rnorm(length(tiles))
+@ 
+Figure \ref{fig:tilesorig}(b) shows the noisy image. The corresponding signal to noise ratio is about $1:1$.
+
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{figure}
+\subfigure[Original image]{
+<<echo=FALSE,fig=true>>=
+zlim <- range(tiles.noisy)
+zlim <- c(1.1 * zlim[1] - 0.1 * zlim[2], 1.1 * zlim[2] - 0.1 * zlim[1])
+par(mai=rep(0,4))
+image(tiles, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+@ 
+}
+\subfigure[Noisy image]{
+<<echo=FALSE,fig=true>>=
+par(mai=rep(0,4))
+image(tiles.noisy, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+@ 
+}
+\caption{Image \texttt{tiles} (panel (a)) and image with white noise added (panel (b)).\label{fig:tilesorig}}
+\end{figure}
+
+In order to be able to use the treethresh algorithm, we need to compute the wavelet transform of the image. We do this using the function \texttt{imwd} from the package \texttt{wavethresh} \citep{Nason:98}.
+
+<<>>=
+tiles.noisy.imwd <- imwd(tiles.noisy)
+@ 
+
+\subsubsection{Using the high-level function \texttt{wavelet.treethresh}}
+
+The function \texttt{wavelet.treethresh} allows for thresholding in a more user-friendly way by calling the relevant functions \texttt{extract.coefficients}, \texttt{estimate.sdev}, \texttt{treethresh} / \texttt{wttresh}, \texttt{prune}, and \texttt{thresh} as well as rescaling the coefficients so that the noise has approximately unit variance. This subsection explains how to use this more user-friendly interface, see subsection \ref{sssec:manually} for the commands required to carry out the thresholding step by step.
+
+<<echo=FALSE>>=
+# Set the seed again to make sure we get the same results as in the next section
+set.seed(111)
+@ 
+
+<<>>=
+tiles.noisy.imwd.threshed <- wavelet.treethresh(tiles.noisy.imwd)
+@ 
+To use the \textsl{Levelwise TreeThresh} algorithm simply add an additional argument \texttt{levelwise=TRUE}.
+
+
+After having thresholded the wavelet coefficients, we transform them back to the original domain using the function \texttt{imwr} from the package \texttt{wavethresh}.
+
+<<>>=
+tiles.denoised <- imwr(tiles.noisy.imwd.threshed)
+@ 
+
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{figure}
+\subfigure[\textsl{TreeThresh}]{
+<<echo=FALSE,fig=true>>=
+par(mai=rep(0,4))
+image(tiles.denoised, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+@ 
+}
+\subfigure[\textsl{EbayesThresh}]{
+<<echo=FALSE,fig=true>>=
+sdev <- estimate.sdev(tiles.noisy.imwd)
+coefs <- extract.coefficients(tiles.noisy.imwd)
+for (nm in names(coefs)) {
+  coefs[[nm]] <- coefs[[nm]] / sdev
+  coefs[[nm]] <- ebayesthresh(coefs[[nm]], sdev=1)
+  coefs[[nm]] <- coefs[[nm]] * sdev
+}
+tiles.noisy.imwd.threshed.ebs <- insert.coefficients(tiles.noisy.imwd, coefs)
+tiles.denoised.ebs <- imwr(tiles.noisy.imwd.threshed.ebs)
+par(mai=rep(0,4))
+image(tiles.denoised.ebs, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+@ 
+}
+\caption{Image reconstructed by the \textsl{TreeThresh} algorithm (panel (a)) compared to the one reconstructed by the \textsl{EbayesThresh} algorithm.\label{fig:tiles.denoised}}
+\end{figure}
+Figure \ref{fig:tiles.denoised}(a) shows the reconstructed image and compares it to the result obtained by \textsl{EbayesThresh} (panel (b)).  The corresponding $l_2$ loss is $\Sexpr{prettyNum(sum((tiles.denoised-tiles)^2))}$ for the \textsl{TreeThresh} algorithm and $\Sexpr{prettyNum(sum((tiles.denoised.ebs-tiles)^2))}$ for the \textsl{EbayesThresh} algorithm.
+
+
+\subsubsection{A step-by-step guide to carrying out the thresholding manually\label{sssec:manually}}
+
+This subsection explains how the reconstruction of the image can be done manually using the functions \texttt{extract.coefficients}, \texttt{estimate.sdev}, \texttt{treethresh} / \texttt{wttresh}, \texttt{prune}, and \texttt{thresh} 
+
+Starting with the wavelet transform we have computed in section \ref{sssec:prologue} we first estimate the standard error of the noise. This is easier for wavelets than it is for general sequences, as one can base the estimate on the coefficients at the finest level, which typically do not contain much of the underlying signal. This can be done using the function \texttt{estimate.sdev} which can be applied to objects of the classes \texttt{wd} or \texttt{imwd}.
+<<>>=
+sdev <- estimate.sdev(tiles.noisy.imwd)
+@ 
+Our estimate of the standard error is $\Sexpr{prettyNum(sdev)}$, which is not too far from the true value of $0.8$ which we used when we added the noise.
+
+Next, we need to extract the coefficient matrices (or vectors in the case of \texttt{wd} objects) from the object, so that we can threshold them. Typically one would not threshold the coarser coefficients, by default \texttt{extract.coefficients} does not extract the coefficients at the four coarsest levels (i.e. these will not be thresholded).
+<<>>=
+tiles.noisy.coefs <- extract.coefficients(tiles.noisy.imwd)
+@ 
+
+Next we need to rescale the coefficients, so that the noise has (approximately) unit variance.
+
+<<>>=
+for (nm in names(tiles.noisy.coefs)) 
+  tiles.noisy.coefs[[nm]] <- tiles.noisy.coefs[[nm]] / sdev
+@ 
+
+We are now ready to threshold the coefficients. We will use the \textsl{Wavelet TreeThresh} algorithm.\footnote{If we wanted to use the \textsl{Levelwise TreeThresh} algorithm we would simply threshold each coefficient matrix (or vector) separately as described in section \ref{ssec:seqex} (with the only exception that we would do the rescaling again).}
+
+<<>>=
+tiles.noisy.wtt <- wtthresh(tiles.noisy.coefs)
+@ 
+
+Figure \ref{fig:wavman} (a) shows the estimated partitioning together with the corresponding thresholded image (before having carried out the pruning). Panel (b) shows the partitioning after the pruning, which removes two splits towards the middle of the image and one towards the bottom left. Figure \ref{fig:wavmanprune} shows how the optimal complexity parameter $C$ was estimated: it shows the predictive loglikelihood estimated by cross-validation as a function of the complexity parameter $C$. The predictive log-likelihood is highest for $C=0.0130$ (corresponding to 14 regions). However, choosing the slightly larger $C=0.2049$ (corresponding to 13 regions) does not give results that are more than half a standard error worse than the best choice (being above the dotted line). Thus a partition with 13 regions is retained.
+
+<<echo=FALSE>>=
+# Set the seed so we can call prune twice and get the same results
+set.seed(111)
+@ 
+<<>>=
+tiles.noisy.wttp <- prune(tiles.noisy.wtt)
+@ 
+
+
+\setkeys{Gin}{width=0.65\textwidth}
+\begin{figure}
+\begin{center}
+<<echo=FALSE,fig=TRUE>>=
+set.seed(111)
+tiles.noisy.wttp <- prune(tiles.noisy.wtt)
+@ 
+\end{center}
+\caption{Predictive loglikelihood as a function of the complexity parameter $C$.\label{fig:wavmanprune}}
+\end{figure}
+
+Once we have determined the partitioning, we only need to carry out the actual thresholding, rescale the coefficients to their original domain, insert them into the \texttt{imwd} (or \texttt{wd} object) and transform the coefficients back to the original domain. 
+<<>>=
+tiles.noisy.coefs.threshed <- thresh(tiles.noisy.wttp)
+for (nm in names(tiles.noisy.coefs)) 
+  tiles.noisy.coefs.threshed[[nm]] <-tiles.noisy.coefs.threshed[[nm]] * sdev
+tiles.noisy.imwd.threshed <- insert.coefficients(tiles.noisy.imwd, 
+                                                   tiles.noisy.coefs.threshed)
+tiles.noisy.threshed <- imwr(tiles.noisy.imwd.threshed)
+@ 
+
+\setkeys{Gin}{width=0.5\textwidth}
+<<echo=FALSE>>=
+clipped.line <- function(dim, at, clip, factor=1, ...) {
+ coords <- clip
+ coords[,dim] <- at
+ lines(coords*factor+0.5, ...) 
+}
+
+draw.cuts <- function(mat, id=1, clip, factor=2, ...) {
+  line <- which(mat[,"id"]==id)
+  if (is.na(mat[line,"dim"])) 
+    return()
+  clipped.line(mat[line, "dim"], mat[line, "pos"], clip, factor=factor, ...)
+  left.clip <- clip
+  left.clip[2,mat[line, "dim"]] <- mat[line,"pos"]
+  draw.cuts(mat, mat[line, "left.child.id"], left.clip, factor, ...)
+  right.clip <- clip
+  right.clip[1,mat[line, "dim"]] <- mat[line,"pos"]
+  draw.cuts(mat, mat[line, "right.child.id"], right.clip, factor, ...)  
+}
+
+clip <- cbind(c(0,128),c(0,128))
+@ 
+
+\begin{figure}
+\subfigure[before pruning]{
+<<echo=FALSE,fig=TRUE>>=
+a <- thresh(tiles.noisy.wtt)
+for (nm in names(a)) a[[nm]] <- a[[nm]] * sdev
+b <- imwr(insert.coefficients(tiles.noisy.imwd, a))
+par(mai=rep(0,4))
+image(1:128,1:128,b, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+invisible(draw.cuts(tiles.noisy.wtt$splits, 1, clip=clip, factor=2, lwd=2))
+#$
+@ 
+}
+\subfigure[after pruning]{
+<<echo=FALSE,fig=TRUE>>=
+par(mai=rep(0,4))
+image(1:128,1:128,tiles.noisy.threshed, col=grey(seq(0,1,length.out=256)), zlim=zlim)
+invisible(draw.cuts(tiles.noisy.wttp$splits, 1, clip=clip, factor=2, lwd=2))
+#$
+@ 
+}
+\caption{Estimated partitioning (before and after the pruning) and corresponding reconstructed image.\label{fig:wavman}}
+\end{figure}
+
+\begin{thebibliography}{7}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\bibitem[{Breiman et al.(1984)Breiman, Friedman, Olshen, and
+  Stone}]{Breiman:84}
+Breiman, L., Friedman, J. H., Olshen, R. A., and Stone, C. J. (1984),
+  \textit{Classification and Regression Trees}, Monterey, CA: Wadsworth and
+  Brooks/Cole.
+\bibitem[{Evers and Heaton(2009)}]{ttpaper}
+Evers, L. and Heaton T. J. (2009), \enquote{Locally-adaptive tree-based thresholding,} \textit{Journal of Compuational and Graphical Statistics}, to appear.
+\bibitem[{Johnstone and Silverman(2004)}]{JohnSil:04}
+Johnstone, I. M. and Silverman, B. W. (2004), \enquote{Needles and straw in
+  haystacks: Empirical Bayes estimates of possible sparse sequences,}
+  \textit{Annals of Statistics}, 32, 1594--1649.
+\bibitem[{Johnstone and Silverman(2005a)}]{JohnSil:05a}
+--- (2005a), \enquote{Empirical {B}ayes selection of wavelet thresholds,}
+  \textit{Annals of Statistics}, 33, 1700--1752.
+\bibitem[{Johnstone and Silverman(2005b)}]{JohnSil:05b}
+--- (2005b), \enquote{EbayesThresh: {R} {P}rograms for {E}mpirical {B}ayes {T}hresholding,} \textit{Journal of Statistical Software}, 12 (8).
+\bibitem[{Nason(1998)}]{Nason:98}
+Nason, G. P. (1998), \textit{WaveThresh3 Software}, University of Bristol.
+\bibitem[{Ripley(1996)}]{Ripley:96}
+Ripley, B. D. (1996), \textit{Pattern recognition and neural networks},
+  Cambridge: Cambridge University Press.
+\end{thebibliography}
+\end{document}

@@ -373,14 +373,14 @@ double compute_minimum_w(Iterator* it) {
 }
 
 double evaluate_llh(Iterator* it, double w) {
-  double one_plus_w_beta, beta_by_one_plus_w_beta, loglh=0;
+  double one_plus_w_beta,/* beta_by_one_plus_w_beta,*/ loglh=0;
   for (double beta=it->start_beta(); !it->finished; beta=it->next_beta()) {
     if (ISNAN(beta))
       continue;
     if (beta>options->beta_max)
       beta=options->beta_max;
     one_plus_w_beta=1+w*beta;
-    beta_by_one_plus_w_beta=beta/one_plus_w_beta;
+    //    beta_by_one_plus_w_beta=beta/one_plus_w_beta;
     loglh+=log(one_plus_w_beta);
   }
   return loglh;
@@ -745,7 +745,7 @@ void TreeNode::split(Criterion* sc, int depth) {
   void* mempos_2=vmaxget();
   IteratorStack* diff=new IteratorStack(its->data);
   double crit, best_crit=R_NegInf;
-  int best_dim=-1, best_pos=-1, df, best_df=1, accepted=0, first_time;
+  int best_dim=-1, best_pos=-1, df, /* best_df=1,*/ accepted=0, first_time;
   R_CheckUserInterrupt();
   sc->prepare_criterion(its,w,loglikelihoods);
   for (int dim=0; dim<its->data->dims; dim++) {
@@ -766,7 +766,7 @@ void TreeNode::split(Criterion* sc, int depth) {
 	accepted=1;
 	best_crit=crit;
 	best_dim=dim;
-	best_df=df;
+	//	best_df=df;
 	best_pos=i;
       }
     }

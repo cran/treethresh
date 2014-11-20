@@ -1,3 +1,6 @@
+import(EbayesThresh)
+import(wavethresh)
+
 useDynLib(treethresh)
 
 export(extract.coefficients)

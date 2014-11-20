@@ -197,14 +197,14 @@ void Iterator::print() {
 
 
 double evaluate_llh(Iterator* it, double w) {
-  double one_plus_w_beta, beta_by_one_plus_w_beta, loglh=0;
+  double one_plus_w_beta, /*beta_by_one_plus_w_beta,*/ loglh=0;
   for (double beta=it->start_beta(); !it->finished; beta=it->next_beta()) {
     if (ISNAN(beta))
       continue;
     if (beta>options->beta_max)
       beta=options->beta_max;
     one_plus_w_beta=1+w*beta;
-    beta_by_one_plus_w_beta=beta/one_plus_w_beta;
+    //    beta_by_one_plus_w_beta=beta/one_plus_w_beta;
     loglh+=log(one_plus_w_beta);
   }
   return loglh;

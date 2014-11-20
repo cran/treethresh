@@ -85,7 +85,8 @@ w.true <- c(rep(0.1,400),rep(0.7,300),rep(0.1,300))
 mu <- numeric(length(w.true))
 non.zero.entry <- runif(length(mu))<w.true
 num.non.zero.entries <- sum(non.zero.entry)
-mu[non.zero.entry] <- rexp(num.non.zero.entries,rate=0.5)*sample(c(-1,1),num.non.zero.entries,replace=TRUE)
+mu[non.zero.entry] <- rexp(num.non.zero.entries,rate=0.5)*
+                         sample(c(-1,1),num.non.zero.entries,replace=TRUE)
 
 # (3) Split graphics device
 par(mfrow=c(2,2))
