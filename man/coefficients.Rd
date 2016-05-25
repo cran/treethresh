@@ -80,7 +80,7 @@ for (nm in names(coefs))
 coefs.tree <- wtthresh(coefs)
 
 ## (10) Prune the tree
-coefs.pruned.tree <- prune.wtthresh(coefs.tree)
+coefs.pruned.tree <- prune(coefs.tree)
 
 ## (11) Threshold according to the pruned tree
 coefs.threshed <- thresh(coefs.pruned.tree)
