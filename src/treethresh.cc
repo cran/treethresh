@@ -4,8 +4,47 @@
 #include <Rinternals.h>
 #include <Rmath.h>
 #include "utils.h"
+#include <R_ext/Visibility.h>
 
-using namespace std;
+static R_NativePrimitiveArgType C_prune_tree_types[] = {
+   REALSXP, INTSXP, INTSXP, INTSXP, INTSXP, REALSXP
+};
+
+static R_NativePrimitiveArgType C_update_membership_types[] = {
+  INTSXP, INTSXP, INTSXP, INTSXP, INTSXP, INTSXP
+};
+
+extern "C" {
+
+  void prune_tree(double* matrix, int* nrow, int* kill, int* leaf, int* membership, double* C);
+  void update_membership(int* old_membership, int* new_membership, int* n, int* old_types, int* new_types, int* n_types);
+  SEXP fit_tree(SEXP args);
+  SEXP fit_tree_wave(SEXP args);
+}
+
+
+static const R_CMethodDef cMethods[] = {
+   {"prune_tree", (DL_FUNC) &prune_tree, 6, C_prune_tree_types},
+   {"update_membership", (DL_FUNC) &update_membership, 6, C_update_membership_types},
+   {NULL, NULL, 0, NULL}
+};
+
+  
+static const R_ExternalMethodDef externalMethods[] = {
+  {"fit_tree", (DL_FUNC) &fit_tree, -1},
+  {"fit_tree_wave", (DL_FUNC) &fit_tree_wave, -1},
+  {NULL, NULL, 0}
+};
+
+extern "C" {
+
+  void attribute_visible R_init_treethresh(DllInfo *info) {
+    R_registerRoutines(info, cMethods, NULL, NULL, externalMethods);
+    R_useDynamicSymbols(info, FALSE);
+    R_forceSymbols(info, TRUE); 
+  }   
+
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

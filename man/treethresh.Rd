@@ -75,7 +75,8 @@ this argument only in very rare circumstances).}
   \item{control}{The control list of tuning options used (see argument \code{control}).}
 }
 \references{
-Evers, L. and Heaton T. (2009) Locally adaptive tree-based thresholding.
+Evers, L. and Heaton T. (2009) Locally Adaptive Tree-Based Thresholding, Journal of Computational and Graphical Statistics 18 (4), 961-977.
+Evers, L. and Heaton T. (2017) Locally Adaptive Tree-Based Thresholding, Journal of Statistical Software, Code Snippets, 78(2), 1-22.
 }
 \examples{
 # (1) Create a vector with the probabilities of a signal being present

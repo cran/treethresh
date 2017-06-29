@@ -3,7 +3,7 @@ import(wavethresh)
 importFrom("graphics", "abline", "axis", "mtext", "segments")
 importFrom("stats", "mad", "median", "na.omit", "sd")
 
-useDynLib(treethresh)
+useDynLib(treethresh, .registration = TRUE, .fixes = "C_")
 
 export(extract.coefficients)
 export(insert.coefficients)

@@ -1,0 +1,22 @@
+bibentry(bibtype = "Article",
+  title        = "Locally Adaptive Tree-Based Thresholding Using the {treethresh} Package in {R}",
+  author       = c(person(given = "Ludger",
+                          family = "Evers",
+                          email = "Ludger.Evers@glasgow.ac.uk"),
+                   person(given = "Tim",
+                          family = "Heaton")),
+  journal      = "Journal of Statistical Software, Code Snippets",
+  year         = "2017",
+  volume       = "78",
+  number       = "2",
+  pages        = "1--22",
+  doi          = "10.18637/jss.v078.c02",
+
+  header       = "To cite treethresh in publications use:",
+  textVersion  =
+  paste("Ludger Evers, Tim Heaton (2017).",
+        "Locally Adaptive Tree-Based Thresholding Using the treethresh Package in R.",
+        "Journal of Statistical Software, Code Snippets, 78(2), 1-22.",
+        "doi:10.18637/jss.v078.c02")
+)
+

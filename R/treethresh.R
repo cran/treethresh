@@ -47,7 +47,7 @@ treethresh <- function(data,beta,criterion="score",control=list(),rho=sys.frame(
     criterion <- possible.criteria[pmatch(criterion,possible.criteria)]
   }
   data.dim <- dim(use.data)
-  result<-.External("fit_tree",data=as.numeric(use.data),dims=as.integer(length(data.dim)),size=as.integer(data.dim),use.beta=as.logical(use.beta),criterion=criterion,control=control,rho=rho,PACKAGE="treethresh")
+  result<-.External(C_fit_tree,data=as.numeric(use.data),dims=as.integer(length(data.dim)),size=as.integer(data.dim),use.beta=as.logical(use.beta),criterion=criterion,control=control,rho=rho)
   names(result) <- c("membership","splits","beta")
   result$membership <- array(result$membership,dim=data.dim)
   result$beta <- array(result$beta,dim=data.dim)
@@ -224,7 +224,7 @@ wtthresh <- function(data,beta,weights,control=list()) {
       warning.text <- paste(warning.text," \"",elt,"\"",sep="")
     warning(warning.text)
   }
-  result<-.External("fit_tree_wave",data=use.data,dims=data.dim,use.beta=as.logical(use.beta),weights=as.double(weights),control=control, PACKAGE="treethresh")
+  result<-.External(C_fit_tree_wave,data=use.data,dims=data.dim,use.beta=as.logical(use.beta),weights=as.double(weights),control=control)
   names(result) <- c("splits","details","w","t","membership","beta")
   dimnames(result$splits)=list(NULL,c("id","parent.id","dim","pos","left.child.id","right.child.id","crit","loglikelihood","alpha","C"))
   if (!all(is.na(result$splits[,"alpha"]))) {
@@ -257,7 +257,7 @@ subtree.wtthresh <- function(object,C=NULL) {
     stop("Not the right type of object")
   nrow <- nrow(object$splits)
   old.types <- as.integer(object$splits[,"id"])
-  result <- .C("prune_tree",splits=as.double(object$splits),nrow=as.integer(nrow),kill=integer(nrow),leaf=as.integer(is.na(object$splits[,"dim"])),membership=as.integer(old.types),C=as.double(C),NAOK=TRUE) # ,package="treethresh")
+  result <- .C(C_prune_tree,splits=as.double(object$splits),nrow=as.integer(nrow),kill=integer(nrow),leaf=as.integer(is.na(object$splits[,"dim"])),membership=as.integer(old.types),C=as.double(C),NAOK=TRUE)
   result$leaf <- as.logical(result$leaf)
   result$kill <- as.logical(result$kill)
   object$splits[result$leaf,3:7] <- NA
@@ -268,7 +268,7 @@ subtree.wtthresh <- function(object,C=NULL) {
   object$t <- object$t[!result$kill,,drop=FALSE]
   for (i in 1:length(object$membership)) {
     len <- length(object$membership[[i]])
-    object$membership[[i]] <- array(.C("update_membership",old.membership=as.integer(object$membership[[i]]),new.membership=integer(len),n=as.integer(len),old.types=as.integer(old.types),new.types=as.integer(result$membership),n.types=as.integer(length(old.types)),NAOK=TRUE)$new.membership,dim=dim(object$membership[[i]]))
+    object$membership[[i]] <- array(.C(C_update_membership,old.membership=as.integer(object$membership[[i]]),new.membership=integer(len),n=as.integer(len),old.types=as.integer(old.types),new.types=as.integer(result$membership),n.types=as.integer(length(old.types)),NAOK=TRUE)$new.membership,dim=dim(object$membership[[i]]))
   }
   object
 }
